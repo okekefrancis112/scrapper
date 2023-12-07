@@ -1,6 +1,14 @@
+import re
 import requests
 from bs4 import BeautifulSoup
 import sqlite3
+
+# Load selenium components
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 # Function to create a SQLite database and table
 def create_database():
@@ -13,7 +21,7 @@ def create_database():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             price REAL,
-            description TEXT
+            image TEXT
         )
     ''')
 
@@ -22,26 +30,31 @@ def create_database():
 
 # Function to scrape data from the website and save it to the database
 def scrape_and_save_data():
-    url = 'https://example.com'  # Replace with the actual URL of the store website
+    url = 'https://jiji.ng/'  # Replace with the actual URL of the store website
     response = requests.get(url)
+    # driver = webdriver.Chrome()
+    # response = driver.get(url)
 
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        items = soup.find_all('div', class_='item')  # Adjust the HTML structure based on the website
+        items = soup.find("body").find("script")
+        for items in re.findall(r"(\[.*\])", items.string):
+            print("trials>>>>>>>>>>>>", items)
+
 
         conn = sqlite3.connect('store_data.db')
         cursor = conn.cursor()
 
         for item in items:
-            name = item.find('span', class_='item-name').text.strip()
-            price = float(item.find('span', class_='item-price').text.strip().replace('$', ''))
-            description = item.find('p', class_='item-description').text.strip()
+            name = item.get('name')
+            price = float(item.get('price'))
+            image = item.get('image')
 
             # Insert data into the database
             cursor.execute('''
                 INSERT INTO items (name, price, description)
                 VALUES (?, ?, ?)
-            ''', (name, price, description))
+            ''', (name, price, image))
 
         conn.commit()
         conn.close()
