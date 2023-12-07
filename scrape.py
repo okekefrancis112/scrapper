@@ -3,13 +3,6 @@ import requests
 from bs4 import BeautifulSoup
 import sqlite3
 
-# Load selenium components
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait, Select
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-
 # Function to create a SQLite database and table
 def create_database():
     conn = sqlite3.connect('store_data.db')
